@@ -1,121 +1,119 @@
 import React from 'react'
+import {yType, XYPlot, XAxis, YAxis, HorizontalBarSeries, LineSeries, Hint} from 'react-vis';
+import Highlight from './Highlight'
 
-import { ProgressLoader } from './ProgressLoader'
+const tipStyle = {
+  display: 'flex',
+  color: '#fff',
+  background: '#000',
+  alignItems: 'center',
+  padding: '5px'
+};
+const boxStyle = {height: '10px', width: '10px'};
 
-const theme = require('../theme')
-
-/**
-  This component renders the data (measures of each component)
-*/
-export function Measures(props) {
-  return (
-    <div>
-      <h1 className="component-text">Components</h1>
-      {props.measures.map((measure, index) => {
-        return (
-          <div
-            key={index}
-            id={measure.componentName}
-            className="container component-result"
-          >
-            <h2>{measure.componentName}</h2>
-            <table style={theme === 'dark' ? { color: '#eff1f4' } : null}>
-              <tr>
-                <td>Total time (ms)</td>
-                <td>
-                  <strong>{Number(measure.totalTimeSpent.toFixed(2))}</strong>
-                </td>
-              </tr>
-              <tr>
-                <td>Instances</td>
-                <td>
-                  <strong>{measure.numberOfInstances}</strong>
-                </td>
-              </tr>
-              <tr>
-                <td>Total time (%)</td>
-                <td>
-                  <strong>{measure.percentTimeSpent}</strong>
-                </td>
-              </tr>
-              <tr>
-                <td>Mount (ms)</td>
-                <td>
-                  <strong>{measure.mount.totalTimeSpentMs}</strong>
-                </td>
-              </tr>
-              <tr>
-                <td>Update (ms)</td>
-                <td>
-                  <strong>{measure.update.totalTimeSpentMs}</strong>
-                </td>
-              </tr>
-              <tr>
-                <td>Render (ms)</td>
-                <td>
-                  <strong>{measure.render.totalTimeSpentMs}</strong>
-                </td>
-              </tr>
-              <tr>
-                <td>Unmount (ms)</td>
-                <td>
-                  <strong>{measure.unmount.totalTimeSpentMs}</strong>
-                </td>
-              </tr>
-              <tr>
-                <td>componentWillMount (ms)</td>
-                <td>
-                  <strong>{measure.componentWillMount.totalTimeSpentMs}</strong>
-                </td>
-              </tr>
-              <tr>
-                <td>componentDidMount (ms)</td>
-                <td>
-                  <strong>{measure.componentDidMount.totalTimeSpentMs}</strong>
-                </td>
-              </tr>
-              <tr>
-                <td>componentWillReceiveProps (ms)</td>
-                <td>
-                  <strong>
-                    {measure.componentWillReceiveProps.totalTimeSpentMs}
-                  </strong>
-                </td>
-              </tr>
-              <tr>
-                <td>shouldComponentUpdate (ms)</td>
-                <td>
-                  <strong>
-                    {measure.shouldComponentUpdate.totalTimeSpentMs}
-                  </strong>
-                </td>
-              </tr>
-              <tr>
-                <td>componentWillUpdate (ms)</td>
-                <td>
-                  <strong>
-                    {measure.componentWillUpdate.totalTimeSpentMs}
-                  </strong>
-                </td>
-              </tr>
-              <tr>
-                <td>componentDidUpdate (ms)</td>
-                <td>
-                  <strong>{measure.componentDidUpdate.totalTimeSpentMs}</strong>
-                </td>
-              </tr>
-              <tr>
-                <td>componentWillUnmount (ms)</td>
-                <td>
-                  <strong>
-                    {measure.componentWillUnmount.totalTimeSpentMs}
-                  </strong>
-                </td>
-              </tr>
-            </table>
-          </div>
-        )
-      })}
-    </div>
-  )
+function buildValue(hoveredCell) {
+  const {x, y} = hoveredCell;
+  //const truedAngle = (angle + angle0) / 2;
+  return {
+    x: x,
+    y: y
+  };
 }
+
+export class Measures extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      lastDrawLocation: null,
+      zoom: false,
+      hoveredCell: false
+    }
+  }
+// sortMeasures(){
+//   let measures = this.props.rawMeasures;
+//   let lastDuration = 0;
+//   let lastLongestDuration = 0;
+//   for (let i = 0; i < measures; i++){
+
+//   }
+// }
+   
+  render(){
+    const {lastDrawLocation, hoveredCell} = this.state;
+    return (
+      <div>
+        <XYPlot
+          xDomain={lastDrawLocation && [lastDrawLocation.left, lastDrawLocation.right]}
+          yType={'ordinal'}
+          width={600}
+          height={300}>
+          {(this.state.zoom) ? 
+              <Highlight onBrushEnd={(area) => {
+                this.setState({
+                  lastDrawLocation: area
+                });
+              }} />
+          : null}
+          
+          
+          <HorizontalBarSeries onValueRightClick={(d,e)=> {console.log('ima bar',d,e)}} onValueMouseOver={v => this.setState({hoveredCell: v})} onValueMouseOut={v => this.setState({hoveredCell: false})}
+            data={this.props.updateQueues.map((queue,i)=>{
+              if (queue.updateque){
+                return { x0:queue.time/1000, x:queue.time/1000+.001, y:0, name:"queue update", priorityLevel: queue.updateque.first.priorityLevel}
+              }
+            })}/>
+          <HorizontalBarSeries onValueRightClick={(d,e)=> {console.log('ima bar',d,e)}} onValueMouseOver={v => this.setState({hoveredCell: v.x && v.y ? v : false})} onValueMouseOut={v => this.setState({hoveredCell: false})}
+            data={this.props.rawMeasures.map((measure,i)=>{
+              return { x0:measure.startTime/1000, x:(measure.startTime + measure.duration)/1000, y:i, name:measure.name}
+            })}/>
+
+            {hoveredCell ? <Hint value={hoveredCell}>
+              <div style={{background: 'lightgrey'}}>
+                <h3>{this.state.hoveredCell.name}</h3>
+                <p>{(this.state.hoveredCell.name === 'queue update') ? 'priorityLevel:'+this.state.hoveredCell.priorityLevel : null}</p>
+              </div>
+            </Hint> : null}
+          <XAxis />
+          <YAxis />
+          
+        </XYPlot>
+
+        <button onClick={() => {
+          this.setState({lastDrawLocation: null});
+        }}>
+          Reset Zoom
+        </button>
+         <button onClick={() => {
+          this.setState({zoom: !this.state.zoom});
+        }}>
+          Zoom Tool
+        </button>
+
+        {this.props.updateQueues.map((queue) => {
+          if (queue.updateque){
+
+            return(
+              <div>
+              {
+               'priorityLevel:'+ queue.updateque.first.priorityLevel +'time'+ queue.time
+              }
+              </div>
+            )
+          }
+        })}
+      </div>
+    )
+  }
+}
+
+// {this.props.rawMeasures.map((measure) => {
+//           return(
+//             <div>
+//             {
+//               measure.name +": startTime: "+
+//               measure.startTime +" duration: "+
+//               measure.duration 
+//             }
+//             </div>
+//           )
+//         })}

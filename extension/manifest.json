@@ -1,17 +1,17 @@
 {
   "manifest_version": 2,
 
-  "name": "React Performance Devtool",
-  "short_name": "react-perf-devtool",
+  "name": "React Fiberline",
+  "short_name": "react-fiberline",
   "description":
     "A devtool extension for inspecting the performance of React components.",
   "version": "4",
   "devtools_page": "devtools.html",
 
   "icons": {
-    "16": "./icon/RP16.png",
-    "48": "./icon/RP48.png",
-    "128": "./icon/RP128.png"
+    //"16": "./icon/RP16.png",
+    "48": "./icon/F.png"
+    //"128": "./icon/RP128.png"
   },
 
   "permissions": ["file:///*", "http://*/*", "https://*/*"],

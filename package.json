@@ -1,10 +1,13 @@
 {
-  "name": "react-perf-devtool",
-  "version": "3.0.5",
+  "name": "react-fiberline",
+  "version": "1.0.0",
   "description": "A devtool for inspecting the performance of React Components",
   "main": "index.js",
-  "files": ["lib/shared", "lib/npm"],
-  "author": "Nitin Tulswani",
+  "files": [
+    "lib/shared",
+    "lib/npm"
+  ],
+  "author": "Jon Coe",
   "license": "MIT",
   "peerDependencies": {
     "react": "^16.2.0",
@@ -18,29 +21,17 @@
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "babel-preset-react": "^6.24.1",
-    "husky": "^0.14.3",
-    "jest": "^21.2.1",
     "lint-staged": "^6.0.0",
-    "prettier": "^1.9.2",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-test-renderer": "^16.2.0",
     "uglifyjs-webpack-plugin": "^1.1.2",
-    "webpack": "^4.0.1",
     "webpack-cli": "^2.0.9"
   },
   "scripts": {
-    "test": "jest",
     "build:babel": "rm -rf lib && babel src --out-dir lib",
-    "build:watch":
-      "rm -rf ./extension/build && NODE_ENV=production ./node_modules/.bin/webpack-cli --watch --config ./webpack/webpack.config.js --progress",
-    "build":
-      "rm -rf ./extension/build && NODE_ENV=production ./node_modules/.bin/webpack-cli --config ./webpack/webpack.config.js --progress && yarn build:babel",
-    "precommit": "lint-staged",
-    "format":
-      "find src -name '*.js' | xargs ./node_modules/.bin/prettier --write --no-semi --single-quote",
-    "generate":
-      "yarn build && rm -rf ./extension/extension.zip && zip -r ./extension/extension.zip ./extension",
+    "build:watch": "rm -rf ./extension/build && NODE_ENV=production ./node_modules/.bin/webpack-cli --watch --config ./webpack/webpack.config.js --progress",
+    "build": "rm -rf ./extension/build && NODE_ENV=production ./node_modules/.bin/webpack-cli --config ./webpack/webpack.config.js --progress && yarn build:babel",
     "build:extension": "yarn format && yarn test && yarn generate"
   },
   "lint-staged": {
@@ -48,5 +39,10 @@
       "./node_modules/.bin/prettier --write --no-semi --single-quote",
       "git add"
     ]
+  },
+  "dependencies": {
+    "d3-scale": "^2.0.0",
+    "react-vis": "^1.9.1",
+    "webpack": "^4.1.1"
   }
 }

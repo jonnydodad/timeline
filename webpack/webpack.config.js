@@ -44,5 +44,8 @@ module.exports = {
   module: {
     rules: [jsLoader()]
   },
-  plugins: plugins()
+  plugins: plugins(),
+    performance: {
+    hints: false
+  }
 }

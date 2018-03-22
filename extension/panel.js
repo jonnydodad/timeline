@@ -1,6 +1,6 @@
 chrome.devtools.panels.create(
-  'React Performance',
-  './icon/RP48.png',
+  'React Fiberline',
+  './icon/F.png',
   'load.html',
   function(panel) {
     console.log('Started!')

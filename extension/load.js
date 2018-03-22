@@ -1,18 +1,17 @@
 require.config({
   paths: {
     react: './dependencies/react',
-    'react-dom': './dependencies/react-dom',
-    Chart: './dependencies/Chart'
+    'react-dom': './dependencies/react-dom'
   }
 })
 
 requirejs(
-  ['react', 'react-dom', 'Chart', '../build/ReactPerfDevtool'],
-  function(React, ReactDOM, Chart, { ReactPerfDevtool }) {
+  ['react', 'react-dom', '../build/ReactPerfDevtool'],
+  function(React, ReactDOM, { ReactPerfDevtool }) {
     const root = document.getElementById('root')
 
     ReactDOM.render(
-      React.createElement(ReactPerfDevtool, { Graphics: Chart }),
+      React.createElement(ReactPerfDevtool),
       root
     )
   }

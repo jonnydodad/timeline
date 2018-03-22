@@ -6,15 +6,7 @@ export function ErrorComponent() {
       An error occurred while collecting the measures. This is possibly due to
       <ul>
         <li>
-          absence of register observer hook in your project.{' '}
-          <a
-            href="https://github.com/nitin42/react-perf-devtool/tree/v2#using-the-browser-extension"
-            style={{ textDecoration: 'none' }}
-            target="_blank"
-          >
-            See the detailed documentation
-          </a>{' '}
-          on how to register a top level observer in your React application.
+          absence of register observer hook in your project.
         </li>
         <br />
         <li>your project is not using React.</li>
