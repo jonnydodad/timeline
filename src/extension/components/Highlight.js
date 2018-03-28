@@ -57,6 +57,7 @@ export default class Highlight extends AbstractSeries {
 
   stopDrawing() {
     // Quickly short-circuit if the user isn't drawing in our component
+    console.log('stopDrawing fired')
     if (!this.state.drawing) {
       return;
     }
@@ -112,6 +113,8 @@ export default class Highlight extends AbstractSeries {
     }
   }
 
+//onMouseLeave={(e) => this.stopDrawing()}
+
   render() {
     const {marginLeft, marginTop, innerWidth, innerHeight, color, opacity} = this.props;
     const {drawArea: {left, right, top, bottom}} = this.state;
@@ -121,7 +124,14 @@ export default class Highlight extends AbstractSeries {
          className="highlight-container"
          onMouseUp={(e) => this.stopDrawing()}
          onMouseLeave={(e) => this.stopDrawing()}
-      >
+         onTouchEnd={(e) => {
+           e.preventDefault();
+           this.stopDrawing();
+         }}
+         onTouchCancel={(e) => {
+           e.preventDefault();
+           this.stopDrawing();
+         }}>
         <rect
           className="mouse-target"
           fill="black"
