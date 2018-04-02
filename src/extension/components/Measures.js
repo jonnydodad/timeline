@@ -131,7 +131,7 @@ export class Measures extends React.Component {
               }} />
           : null} 
 
-            <Hint value={hoveredCell} topLeft>
+            <Hint value={hoveredCell} orientation="topleft">
               <div style={{background: '#3de285',fontSize:10, color:'black', opacity: 0.9 }}>
                 <h3>{hoveredCell.name}</h3>
               </div>
