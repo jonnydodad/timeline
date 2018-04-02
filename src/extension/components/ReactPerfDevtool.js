@@ -8,7 +8,7 @@ let queries = {
   measuresLength: 'JSON.stringify(__REACT_PERF_DEVTOOL_GLOBAL_STORE__.length)',
   rawMeasures:
     'JSON.stringify(__REACT_PERF_DEVTOOL_GLOBAL_STORE__.rawMeasures)',
-  updateQueues: 'JSON.stringify(__REACT_DEVTOOLS_GLOBAL_HOOK__.updateQueues)',
+  //updateQueues: 'JSON.stringify(__REACT_DEVTOOLS_GLOBAL_HOOK__.updateQueues)',
   //updateQueueTimes: 'JSON.stringify(__REACT_DEVTOOLS_GLOBAL_HOOK__.updateQueueTimes)',
   clear: `__REACT_PERF_DEVTOOL_GLOBAL_STORE__ = {
           length: 0,
@@ -30,7 +30,7 @@ export class ReactPerfDevtool extends React.Component {
     super(props)
     this.state = {
       rawMeasures: [], 
-      updateQueues: [],
+     // updateQueues: [],
       loading: false, 
       hasError: false 
     }
@@ -44,7 +44,7 @@ export class ReactPerfDevtool extends React.Component {
     this.setState({ loading: true })
     this.timer = setInterval(() => {
       this.getMeasures();
-      this.getUpdateQueues();
+      //this.getUpdateQueues();
     }, 2000)
   }
 
@@ -70,19 +70,19 @@ export class ReactPerfDevtool extends React.Component {
     })
   }
 
-  getUpdateQueues = () => {
-    this.evaluate(queries['updateQueues'], (measures, err) => {
-      if (err) {
-        this.setErrorState()
-        return
-      }
+  // getUpdateQueues = () => {
+  //   this.evaluate(queries['updateQueues'], (measures, err) => {
+  //     if (err) {
+  //       this.setErrorState()
+  //       return
+  //     }
 
-      this.setState({
-        loading: false,
-        updateQueues: JSON.parse(measures)
-      })
-    })
-  }
+  //     this.setState({
+  //       loading: false,
+  //       updateQueues: JSON.parse(measures)
+  //     })
+  //   })
+  // }
 
   clearMeasures = () => this.evaluate(queries['clear'])
 
@@ -126,8 +126,7 @@ export class ReactPerfDevtool extends React.Component {
           <ErrorComponent />
         ) : (
           <React.Fragment>
-            <Measures updateQueues={this.state.updateQueues} 
-            rawMeasures={this.state.rawMeasures} />
+            <Measures rawMeasures={this.state.rawMeasures} />
           </React.Fragment>
         )}
       </div>

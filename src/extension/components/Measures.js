@@ -3,7 +3,7 @@ import {yType, XYPlot, XAxis, YAxis, LineSeries, Hint, LabelSeries, HorizontalBa
 import Highlight from './Highlight'
 import formatTimelineData from './formatTimelineData'
 import {Decimal} from 'decimal.js';
-//hi nathan
+
 var buttonContainerStyle = {
   paddingLeft: "400px",
   background: "#19004c",
