@@ -44,7 +44,7 @@ export default class Highlight extends AbstractSeries {
       drawArea: {
         top: 0,
         right: location,
-        bottom: innerHeight,
+        bottom: innerHeight+40,
         left: location
       },
       startLoc: location

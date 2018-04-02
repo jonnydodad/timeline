@@ -17,6 +17,11 @@ let queries = {
         }`
 }
 
+const divStyle = {
+  paddingLeft: "400px",
+  width: "600px"
+};
+
 export class ReactPerfDevtool extends React.Component {
   timer = null
   evaluate = chrome.devtools.inspectedWindow.eval
@@ -112,8 +117,8 @@ export class ReactPerfDevtool extends React.Component {
     }
 
     return (
-      <div>
-        <div style={{ display: 'inlineBlock' }}>
+      <div style={{"background":"#19004c", padding: "20px", width:"1000px"}}>
+        <div style={divStyle}>
           <Buttons  clear={this.clear} reload={this.reload} />
           
         </div>
