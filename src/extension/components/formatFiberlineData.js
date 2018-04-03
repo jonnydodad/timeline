@@ -1,28 +1,47 @@
 import {Decimal} from 'decimal.js';
 
-const colorCache = {}
+let dataCache = []
 
 export default function formatFiberlineData(data) {
 
   let stack = [0]
+  let startTime;
+  let duration;
   let lastEndTime;
   let result = []
+  const keys = Object.keys(data);
 
-  for (var i = 0; i < data.length; i++) {
-    let datum = { name: data[i].name, startTime:data[i].startTime, duration:data[i].duration, line:null };
-    if (!colorCache[i]) colorCache[i] = Math.random()*.3;
-    datum["color"] = colorCache[i]
-    while (data[i].startTime >= stack[stack.length-1] && stack.length >= 0){
+  for (let i = dataCache.length; i < keys.length; i++) {
+
+    if (i < keys.length-1 && 
+      data[keys[i]].workStarted[0].time === data[keys[i+1]].workStarted[0].time && 
+      data[keys[i]].workCompleted[0].time === data[keys[i+1]].workCompleted[0].time){
+
+      let temp = data[keys[i]];
+      data[keys[i]] = data[keys[i+1]];
+      data[keys[i+1]] = temp;
+    }
+
+    let datum = { 
+      x0: data[keys[i]].workStarted[0].time/1000, 
+      x: data[keys[i]].workCompleted[0].time/1000,
+      name: keys[i]
+    };
+
+    datum["color"] = Math.random()*.1;
+
+    while (data[keys[i]].workStarted[0].time >= stack[stack.length-1] && stack.length >= 0){
       stack.pop();
     }
   
-    datum["line"] = -stack.length-1;
+    datum["y"] = -stack.length-1;
     result.push(datum);
-    let ST = new Decimal(data[i].startTime)
-    let dur = new Decimal(data[i].duration)
-    lastEndTime = ST.plus(dur);
+    startTime = new Decimal(data[keys[i]].workStarted[0].time)
+    duration = new Decimal(data[keys[i]].workCompleted[0].time - data[keys[i]].workStarted[0].time)
+    lastEndTime = startTime.plus(duration);
     stack.push(lastEndTime)
 
   }
-  return result;
+  dataCache = dataCache.concat(result)
+  return dataCache;
 };

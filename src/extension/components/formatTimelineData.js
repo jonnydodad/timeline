@@ -1,6 +1,6 @@
 import {Decimal} from 'decimal.js';
 
-const colorCache = {}
+let dataCache = []
 
 export default function formatTimelineData(data) {
 
@@ -8,21 +8,29 @@ export default function formatTimelineData(data) {
   let lastEndTime;
   let result = []
 
-  for (var i = 0; i < data.length; i++) {
-    let datum = { name: data[i].name, startTime:data[i].startTime, duration:data[i].duration, line:null };
-    if (!colorCache[i]) colorCache[i] = Math.random()*.3;
-    datum["color"] = colorCache[i]
+  for (let i = dataCache.length; i < data.length; i++) {
+    if (i < data.length-1 && data[i].startTime === data[i+1].startTime && data[i].duration < data[i+1].duration){
+      let temp = data[i];
+      data[i] = data[i+1];
+      data[i+1] = temp;
+    }
+
+    let datum = { x0: data[i].startTime/1000, x: (data[i].startTime + data[i].duration)/1000, name: data[i].name };
+
+    datum["color"] = Math.random()*.1;
+
     while (data[i].startTime >= stack[stack.length-1] && stack.length >= 0){
       stack.pop();
     }
   
-    datum["line"] = -stack.length-1;
+    datum["y"] = -stack.length-1;
     result.push(datum);
-    let ST = new Decimal(data[i].startTime)
-    let dur = new Decimal(data[i].duration)
-    lastEndTime = ST.plus(dur);
+    let startTime = new Decimal(data[i].startTime)
+    let duration = new Decimal(data[i].duration)
+    lastEndTime = startTime.plus(duration);
     stack.push(lastEndTime)
 
   }
-  return result;
+  dataCache = dataCache.concat(result)
+  return dataCache;
 };

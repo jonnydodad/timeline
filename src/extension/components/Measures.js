@@ -2,6 +2,7 @@ import React from 'react'
 import {yType, XYPlot, XAxis, YAxis, LineSeries, Hint, LabelSeries, HorizontalBarSeries} from 'react-vis';
 import Highlight from './Highlight'
 import formatTimelineData from './formatTimelineData'
+import formatFiberlineData from './formatFiberlineData'
 import {Decimal} from 'decimal.js';
 
 var buttonContainerStyle = {
@@ -17,57 +18,112 @@ export class Measures extends React.Component {
     this.state = {
       lastDrawLocation: null,
       zoom: false,
-      hoveredCell: false,
+      renderCell: false,
+      unitOfWork: false,
       timelineMeasures: false,
+      fiberlineMeasures: false,
       color: false,
-      hint: false
+      hint: false,
+      button_color_yellow: true,
+      hoveredBar: false,
+      lastColor: false
     }
   }
 
   componentDidMount(){
    this.buildTimelineData();
+   this.buildFiberlineData();
   }
 
   componentWillReceiveProps(){
     this.buildTimelineData();
+    this.buildFiberlineData();
   }
 
   buildTimelineData = () => {
     this.setState({
-      timelineMeasures: formatTimelineData(this.props.rawMeasures).map((measure,i)=>{
-              return { x0:measure.startTime/10000, x:(measure.startTime + measure.duration)/10000, y:measure.line, name:measure.name, label: measure.name, color: measure.color, style:{fontSize: '15', display:'none'}}
-            })
+      timelineMeasures: formatTimelineData(this.props.rawMeasures)
     })
+  }
+
+  buildFiberlineData = () => {
+    this.setState({
+      fiberlineMeasures: formatFiberlineData(this.props.workLoopMeasures)
+    })
+  }
+
+  changeButtonColor = () => {
+    this.setState({button_color_yellow: !this.state.button_color_yellow})
+  }
+
+  clearHovered = (measures) => {
+    let temp = this.state[measures].slice()
+    //console.log('clear please',temp,'index: color ', temp[this.state.hoveredBar].color)
+    temp[this.state.hoveredBar].color = this.state.lastColor;
+    this.setState({
+      [measures]: temp
+    })
+  }
+
+  changeBarColor = (v, measures) => {
+    
+      let index = false;
+      let savedColor = false;
+      this.setState({
+        [measures]: this.state[measures].map((el,i) => {
+          if (el.x === v.x && el.y === v.y){
+            savedColor = el.color;
+            el.color = 1;
+            index = i;
+          }
+          return el;
+        }),
+        hoveredBar: index,
+        lastColor: savedColor
+      })
+    
   }
    
   render(){
-    const {lastDrawLocation, hoveredCell} = this.state;
+    const {lastDrawLocation, renderCell, unitOfWork} = this.state;
+    let buttonColor = this.state.button_color_yellow ? "yellow" : "green";
+
     return (
-      <div >
+      <div>
+
+        <div style={buttonContainerStyle}>
+          <button style={{"background": "#19004c", fontSize: "15px", color: "#ADDDE1", borderColor:"red"}} onClick={() => {this.setState({lastDrawLocation: null});}}>Reset Zoom</button>
+          <button style={{"background": buttonColor, fontSize: "15px", color: "#ADDDE1", borderColor:"red"}} onClick={() => {this.setState({zoom: !this.state.zoom, button_color_yellow:!this.state.button_color_yellow});}}>Brush/Zoom</button>
+          <button style={{"background": "#19004c", fontSize: "15px", color: "#ADDDE1", borderColor:"red"}} onClick={() => this.props.reload()}>Reload</button>   
+        </div>
         
         <XYPlot
-          style={{background: '#020028'}}
-          margin={{left: 80, right: 0, top: 40, bottom: 40}}
+          style={{background: '#020028', marginLeft: '20px'}}
+          margin={{right: 0, top: 40 }}
           xDomain={lastDrawLocation && [lastDrawLocation.left, lastDrawLocation.right]}
           yType={'ordinal'}
           width={1000}
           height={150}
           colorType="linear"
           colorDomain={[0, 1]}
-          colorRange={['orange','red']}
+          colorRange={['#007af4','#3de285']}
           yRange={[-10, 100]}
           >
 
         <HorizontalBarSeries 
-          stroke={'red'}
-          onValueMouseOver={v => { if (!this.state.zoom) this.setState({hint:v.name,  hoveredCell: v.x && v.y ? v : false})}}
-          onValueMouseOut={v => this.setState({hoveredCell: false})} 
-          animation 
-          onSeriesMouseOver={(event)=>{
-            // does something on mouse over
-            // you can access the value of the event
+          stroke={'#ADDDE1'}
+          onValueMouseOver={v => { 
+            if (!this.state.zoom){
+              this.changeBarColor(v, 'fiberlineMeasures')
+              this.setState({hint:v.name,  unitOfWork: v.x && v.y ? v : false})
+            } 
           }}
-          data={this.state.timelineMeasures}/>
+          onValueMouseOut={() => {
+            this.clearHovered('fiberlineMeasures')
+            this.setState({unitOfWork: false})
+            } 
+          }
+          data={this.state.fiberlineMeasures}/>
           
           {(this.state.zoom) ? 
               <Highlight color={'red'} onBrushEnd={(area) => {
@@ -77,9 +133,9 @@ export class Measures extends React.Component {
               }} />
           : null} 
 
-            <Hint value={hoveredCell} topLeft>
-              <div style={{background: '#3de285',fontSize:10, color:'black', opacity: 0.9 }}>
-                <h3>{hoveredCell.name}</h3>
+            <Hint value={unitOfWork}>
+              <div style={{background: '#3de285',fontSize:10, color:'black'}}>
+                <h3>{unitOfWork.name}</h3>
               </div>
             </Hint>
             
@@ -89,37 +145,37 @@ export class Measures extends React.Component {
               ticks: {stroke: '#ADDDE1'},
               //text: {stroke: 'none', fill: '#6b6b76', fontWeight: 600}
             }}/>
-          <YAxis hideLine/>         
+          <YAxis hideLine hideTicks/>         
         </XYPlot>
 
 
-        <div style={buttonContainerStyle}>
-          <button style={{"background": "#19004c", fontSize: "15px", color: "#ADDDE1", borderColor:"red"}} onClick={() => {this.setState({lastDrawLocation: null});}}>Reset Zoom</button>
-          <button style={{"background": "#19004c", fontSize: "15px", color: "#ADDDE1", borderColor:"red"}} onClick={() => {this.setState({zoom: !this.state.zoom});}}>Brush Tool</button>  
-        </div>
-
-
         <XYPlot
-          style={{background: '#020028'}}
-          margin={{left: 80, right: 0, top: 40, bottom: 40}}
+          style={{background: '#020028', marginLeft: '20px', marginTop: '12px'}}
+          margin={{right: 0, top: 40}}
           xDomain={lastDrawLocation && [lastDrawLocation.left, lastDrawLocation.right]}
           yType={'ordinal'}
           width={1000}
           height={150}
           colorType="linear"
           colorDomain={[0, 1]}
-          colorRange={['orange','red']}
+          colorRange={['orange','#3de285']}
           yRange={[-10, 100]}
           >
 
           <HorizontalBarSeries 
           stroke={'red'}
-          onValueMouseOver={v => { if (!this.state.zoom) this.setState({hint:v.name,  hoveredCell: v.x && v.y ? v : false})}}
-          onValueMouseOut={v => this.setState({hoveredCell: false})} 
-          animation 
-          onSeriesMouseOver={(event)=>{
-            // vironi stuff
+          onValueMouseOver={v => { 
+            if (!this.state.zoom){
+              this.changeBarColor(v, 'timelineMeasures', false)
+              this.setState({hint:v.name,  renderCell: v.x && v.y ? v : false})
+            } 
           }}
+          onValueMouseOut={() => {
+            this.clearHovered('timelineMeasures')
+            this.setState({renderCell: false})
+            } 
+          }
+          
           data={this.state.timelineMeasures}
           />
           
@@ -131,9 +187,9 @@ export class Measures extends React.Component {
               }} />
           : null} 
 
-            <Hint value={hoveredCell} orientation="topleft">
-              <div style={{background: '#3de285',fontSize:10, color:'black', opacity: 0.9 }}>
-                <h3>{hoveredCell.name}</h3>
+            <Hint value={renderCell}>
+              <div style={{background: '#3de285',fontSize:10, color:'black'}}>
+                <h3>{renderCell.name}</h3>
               </div>
             </Hint>
             
@@ -143,10 +199,10 @@ export class Measures extends React.Component {
               ticks: {stroke: '#ADDDE1'},
               //text: {stroke: 'none', fill: '#6b6b76', fontWeight: 600}
             }}/>
-          <YAxis hideLine/>     
+          <YAxis hideLine hideTicks/>     
 
         </XYPlot>
-        
+
       </div>
     )
   }
@@ -164,20 +220,20 @@ export class Measures extends React.Component {
 ///            bottomRight
 //            data={this.state.timelineMeasures} />  
 
-//<Hint value={hoveredCell}>
+//<Hint value={renderCell}>
 //              <div style={{background: 'grey'}}>
 //                <h3>Value of hint</h3>
-//                <p>{hoveredCell.name}</p>
+//                <p>{renderCell.name}</p>
 //              </div>
 //            </Hint>
-// {this.state.hoveredCell ? <Hint value={{x:this.state.hoveredCell.x, y:this.state.hoveredCell.y}}>
+// {this.state.renderCell ? <Hint value={{x:this.state.renderCell.x, y:this.state.renderCell.y}}>
 //               <div style={{background: 'lightgrey'}}>
-//                 <h3>{this.state.hoveredCell.name}</h3>
-//                 <p>{(this.state.hoveredCell.name === 'queue update') ? 'priorityLevel:'+this.state.hoveredCell.priorityLevel : null}</p>
+//                 <h3>{this.state.renderCell.name}</h3>
+//                 <p>{(this.state.renderCell.name === 'queue update') ? 'priorityLevel:'+this.state.renderCell.priorityLevel : null}</p>
 //               </div>
 //             </Hint> : null}
 
-// <HorizontalBarSeries onValueRightClick={(d,e)=> {console.log('ima bar',d,e)}} onValueMouseOver={v => this.setState({hoveredCell: v})} onValueMouseOut={v => this.setState({hoveredCell: false})} animation
+// <HorizontalBarSeries onValueRightClick={(d,e)=> {console.log('ima bar',d,e)}} onValueMouseOver={v => this.setState({renderCell: v})} onValueMouseOut={v => this.setState({renderCell: false})} animation
 //             data={this.props.updateQueues.map((queue,i)=>{
 //               if (queue.updateque){
 //                 return { x0:queue.time/1000, x:queue.time/1000+.0003, y:0, name:"queue update", priorityLevel: queue.updateque.first.priorityLevel}

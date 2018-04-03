@@ -9,7 +9,7 @@ let queries = {
   rawMeasures:
     'JSON.stringify(__REACT_PERF_DEVTOOL_GLOBAL_STORE__.rawMeasures)',
   //updateQueues: 'JSON.stringify(__REACT_DEVTOOLS_GLOBAL_HOOK__.updateQueues)',
-  //updateQueueTimes: 'JSON.stringify(__REACT_DEVTOOLS_GLOBAL_HOOK__.updateQueueTimes)',
+  workLoopMeasures: '__REACT_FIBERLINE_GLOBAL_HOOK__.toJSON()',
   clear: `__REACT_PERF_DEVTOOL_GLOBAL_STORE__ = {
           length: 0,
           measures: [],
@@ -30,7 +30,7 @@ export class ReactPerfDevtool extends React.Component {
     super(props)
     this.state = {
       rawMeasures: [], 
-     // updateQueues: [],
+      workLoopMeasures: [],
       loading: false, 
       hasError: false 
     }
@@ -44,7 +44,7 @@ export class ReactPerfDevtool extends React.Component {
     this.setState({ loading: true })
     this.timer = setInterval(() => {
       this.getMeasures();
-      //this.getUpdateQueues();
+      this.getWorkLoopMeasures();
     }, 2000)
   }
 
@@ -70,19 +70,20 @@ export class ReactPerfDevtool extends React.Component {
     })
   }
 
-  // getUpdateQueues = () => {
-  //   this.evaluate(queries['updateQueues'], (measures, err) => {
-  //     if (err) {
-  //       this.setErrorState()
-  //       return
-  //     }
-
-  //     this.setState({
-  //       loading: false,
-  //       updateQueues: JSON.parse(measures)
-  //     })
-  //   })
-  // }
+  getWorkLoopMeasures = () => {
+    this.evaluate(queries['workLoopMeasures'], (measures, err) => {
+      if (err) {
+        this.setErrorState()
+        return
+      }
+     // const parsedMeasures = JSON.parse(measures)
+     // console.log("measures",JSON.parse(measures))
+      this.setState({
+        loading: false,
+        workLoopMeasures: JSON.parse(measures)
+      })
+    })
+  }
 
   clearMeasures = () => this.evaluate(queries['clear'])
 
@@ -117,19 +118,23 @@ export class ReactPerfDevtool extends React.Component {
     }
 
     return (
-      <div style={{"background":"#19004c", padding: "20px", width:"1000px"}}>
-        <div style={divStyle}>
-          <Buttons  clear={this.clear} reload={this.reload} />
-          
-        </div>
+      <div style={{"background":"#19004c", "height":"800px", width:"1040px"}}>
         {this.state.hasError ? (
           <ErrorComponent />
         ) : (
           <React.Fragment>
-            <Measures rawMeasures={this.state.rawMeasures} />
+            <Measures workLoopMeasures={this.state.workLoopMeasures}
+            rawMeasures={this.state.rawMeasures} reload={this.reload}/>
           </React.Fragment>
         )}
       </div>
     )
   }
 }
+
+
+
+//<div style={divStyle}>
+  //        <Buttons  clear={this.clear} reload={this.reload} />
+          
+    //    </div>
